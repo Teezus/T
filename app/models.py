@@ -10,6 +10,7 @@ AWAY_TEAM = 1
 
 
 class User(db.Model):
+  __tablename__ = 'user'
   id = db.Column(db.Integer, primary_key = True)
   first_name = db.Column(db.String(25), index = True, nullable = False)
   last_name = db.Column(db.String(25), index = True, nullable = False)
@@ -22,6 +23,7 @@ class User(db.Model):
     return '<User: %r, %r>' % self.first_name % self.last_name
 
 class Year(db.Model):
+  __tablename__ = 'year'
   id = db.Column(db.Integer, primary_key = True)
   year = db.Column(db.Integer, nullable = False)
   weeks = db.relationship('Week', backref = 'year', lazy = 'dynamic')
@@ -30,6 +32,7 @@ class Year(db.Model):
     return '<Year: %d>' % self.year
 
 class Week(db.Model):
+  __tablename__ = 'week'
   id = db.Column(db.Integer, primary_key = True)
   week = db.Column(db.Integer, nullable = False, unique = True)
   year_id = db.Column(db.Integer, db.ForeignKey('year.id'))
@@ -40,6 +43,7 @@ class Week(db.Model):
     return '<Week: %d, %d>' % self.week % self.year
 
 class PointValueSet(db.Model):
+  __tablename__ = 'pointvalueset'
   id = db.Column(db.Integer, primary_key = True)
   type = db.Column(db.String(1), unique = True, nullable = False)
   seven = db.Column(db.Integer, nullable = False)
@@ -53,18 +57,22 @@ class PointValueSet(db.Model):
 
 
 class Team(db.Model):
+  __tablename__ = 'team'
   id = db.Column(db.Integer, primary_key = True)
   city = db.Column(db.String(50), index = True, nullable = False)
   nickname = db.Column(db.String(50), index = True, nullable = False)
   stadium = db.Column(db.String(100), nullable = False)
-  home_teams = db.relationship('Schedule', backref = 'home_team', foreign_keys="Schedule.home_team_id")
-  away_teams = db.relationship('Schedule', backref = 'away_team', foreign_keys="Schedule.away_team_id")
+
+  @classmethod
+  def all(cls):
+    return Team.query.all()
 
   def __repr__(self):
     return '<Team: %r %r>' % self.city % self.nickname
 
 
 class Schedule(db.Model):
+  __tablename__ = 'schedule'
   id = db.Column(db.Integer, primary_key = True)
   week_id = db.Column(db.Integer, db.ForeignKey('week.id'), nullable = False)
   date = db.Column(db.DateTime, nullable = False)
@@ -79,6 +87,7 @@ class Schedule(db.Model):
 
 
 class Pick(db.Model):
+  __tablename__ = 'pick'
   id = db.Column(db.Integer, primary_key = True)
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
   game_id = db.Column(db.Integer, db.ForeignKey('schedule.id'), nullable = False)

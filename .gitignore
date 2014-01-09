@@ -1,5 +1,6 @@
-# Virtualenv environment
+# Flask specific stuff
 nfl_env
+migrations
 
 *.py[cod]
 
