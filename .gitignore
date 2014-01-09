@@ -1,3 +1,6 @@
+# Virtualenv environment
+nfl_env
+
 *.py[cod]
 
 # C extensions
