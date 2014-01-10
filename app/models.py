@@ -1,4 +1,6 @@
 from app import db
+from werkzeug.security import generate_password_hash, check_password_hash
+import datetime
 
 # Role constants
 ROLE_USER = 0
@@ -17,7 +19,14 @@ class User(db.Model):
   email = db.Column(db.String(120), index = True, unique = True, nullable = False)
   role = db.Column(db.SmallInteger, default = ROLE_USER, nullable = False)
   last_login = db.Column(db.DateTime)
+  pwdhash = db.Column(db.String(100))
   picks = db.relationship('Pick', backref = 'user', lazy = 'dynamic')
+
+  def set_password(self, password):
+    self.pwdhash = genereate_password_hash(password)
+
+  def check_password(self, password):
+    return check_password_hash(self.pwdhash, password)
 
   def __repr__(self):
     return '<User: %r, %r>' % self.first_name % self.last_name
@@ -77,10 +86,12 @@ class Schedule(db.Model):
   week_id = db.Column(db.Integer, db.ForeignKey('week.id'), nullable = False)
   date = db.Column(db.DateTime, nullable = False)
   home_team_id = db.Column(db.Integer, db.ForeignKey('team.id'), nullable = False)
-  home_team_score = db.Column(db.Integer)
+  home_team_score = db.Column(db.Integer, default=-1)
   away_team_id = db.Column(db.Integer, db.ForeignKey('team.id'), nullable = False)
-  away_team_score = db.Column(db.Integer)
+  away_team_score = db.Column(db.Integer, default=-1)
   picks = db.relationship('Pick', backref = 'game', lazy = 'dynamic')
+  home_team = db.relationship(Team, foreign_keys=home_team_id)
+  away_team = db.relationship(Team, foreign_keys=away_team_id)
 
   def __repr__(self):
     return '<Game: %r at %r on %r>' % self.away_team % self.home_team % self.date
