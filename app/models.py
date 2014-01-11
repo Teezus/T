@@ -21,12 +21,17 @@ class User(db.Model):
   last_login = db.Column(db.DateTime)
   pwdhash = db.Column(db.String(100))
   picks = db.relationship('Pick', backref = 'user', lazy = 'dynamic')
+  statistics = db.relationship('Statistic', backref = 'user', lazy = 'dynamic')
 
   def set_password(self, password):
     self.pwdhash = genereate_password_hash(password)
 
   def check_password(self, password):
     return check_password_hash(self.pwdhash, password)
+
+  @classmethod
+  def all(cls):
+    return User.query.all()
 
   def __repr__(self):
     return '<User: %r, %r>' % self.first_name % self.last_name
@@ -36,6 +41,7 @@ class Year(db.Model):
   id = db.Column(db.Integer, primary_key = True)
   year = db.Column(db.Integer, nullable = False)
   weeks = db.relationship('Week', backref = 'year', lazy = 'dynamic')
+  statistics = db.relationship('Statistic', backref = 'year', lazy = 'dynamic')
 
   def __repr__(self):
     return '<Year: %d>' % self.year
@@ -47,6 +53,7 @@ class Week(db.Model):
   year_id = db.Column(db.Integer, db.ForeignKey('year.id'))
   pvs_id = db.Column(db.Integer, db.ForeignKey('pointvalueset.id'))
   games = db.relationship('Schedule', backref = 'week', lazy = 'dynamic')
+  statistics = db.relationship('Statistic', backref = 'week', lazy = 'dynamic')
 
   def __repr__(self):
     return '<Week: %d, %d>' % self.week % self.year
@@ -93,6 +100,10 @@ class Schedule(db.Model):
   home_team = db.relationship(Team, foreign_keys=home_team_id)
   away_team = db.relationship(Team, foreign_keys=away_team_id)
 
+  @property
+  def winner(self):
+    return HOME_TEAM if self.home_team_score > self.away_team_score else AWAY_TEAM
+  
   def __repr__(self):
     return '<Game: %r at %r on %r>' % self.away_team % self.home_team % self.date
 
@@ -106,5 +117,28 @@ class Pick(db.Model):
   points = db.Column(db.Integer)
   awardedPoints = db.Column(db.Integer, default = 0)
 
+  @classmethod
+  def user_picks_by_week(cls, user, week):
+    return Pick.query.join(Schedule).filter(Schedule.week == week, Pick.user == user).all()
+
   def __repr__(self):
     return '<Pick: %r - %d - %d>' % self.user % self.game % self.selection
+  
+# A note about this table. This techincally can be calculated from the database.
+# However, this information will be accessed frequently on the statistics page
+# of the pool and of a user, so explicity creating it here in a table will
+# save the overhead of having to join every time someone wants to look at their
+# statistics.
+class Statistic(db.Model):
+  __tablename__ = 'statistics'
+  id = db.Column(db.Integer, primary_key = True)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
+  year_id = db.Column(db.Integer, db.ForeignKey('year.id'), nullable = False)
+  week_id = db.Column(db.Integer, db.ForeignKey('week.id'), nullable = False)
+  seven = db.Column(db.Integer, default = 0)
+  five = db.Column(db.Integer, default = 0)
+  three = db.Column(db.Integer, default = 0)
+  one = db.Column(db.Integer, default = 0)
+
+  def __repr__(self):
+    return '<Statistic: %r>' % self.user
