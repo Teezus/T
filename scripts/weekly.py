@@ -8,7 +8,7 @@ week. To be run on Tuesday morning.
 '''
 from bs4 import BeautifulSoup
 import urllib2
-from app import models, db
+from app import models
 
 year = models.Year.query.filter_by(year=2013).first()
 week_types = {1: 'A', 2: 'A', 3:'A', 4:'B', 5:'C', 6:'B', 7:'B', 8:'C', 9:'C', 10:'C', 11:'B', 12:'C', 13:'A', 14:'A', 15:'A', 16:'A', 17:'A' }
@@ -41,7 +41,8 @@ def get_results(week_no):
     score_games(week)
 
     #FINALLY, CREATE THE PICK OBJECTS FOR NEXT WEEK
-    create_picks(week_no + 1):
+    create_picks(week_no + 1)
+
 
 def score_games(week):
     #GATHER ALL OF THE PICKS FOR THE CURRENT WEEK
@@ -56,27 +57,38 @@ def score_games(week):
       users_picks = models.User.user_picks_by_week(current_user, week)
       week_statistic = models.Statistic(user=user, year=year, week=week)
       for pick in users_picks:
-        week_statistic.seven = week_statistic.seven + 1 if pick.awardedPoints == 7
-        week_statistic.five = week_statistic.five + 1 if pick.awardedPoints == 5
-        week_statistic.three = week_statistic.three + 1 if pick.awardedPoints == 3
-        week_statistic.one = week_statistic.one + 1 if pick.awardedPoints == 1
+        if pick.awardedPoints == 7:
+          week_statistic.seven = week_statistic.seven + 1
+        elif pick.awardedPoints == 5:
+          week_statistic.five = week_statistic.five + 1
+        elif pick.awardedPoints == 3:
+          week_statistic.three = week_statistic.three + 1
+        elif pick.awardedPoints == 1:
+          week_statistic.one = week_statistic.one + 1
 
     #COMMIT THE CHANGES TO THE PICKS AND STATISTICS
     db.session.commit()
 
+
 def create_picks(week_no):
     #GATHER SOME INFORMATION WE WILL NEED
+    print week_no
     week = models.Week.query.filter_by(week=week_no).first()
-    games = models.Game.query.filter_by(week=week).all()
+    print week.id
+
+    games = models.Schedule.query.filter_by(week=week).all()
+    print "I found %d games." % len(games)
+
     users = models.User.all()
-    
+    print "I found %d users." % len(users)
+
     #FOR EACH USER, CREATE A PICK FOR EACH GAME IN THE UPCOMING WEEK
     for current_user in users:
         for current_game in games:
           pick = models.Pick(user=current_user, game=current_game)
 
     #COMMIT THE NEW PICKS
-    db.session.commit()
+    models.db.session.commit()
 
 
 def main():

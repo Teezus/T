@@ -9,7 +9,7 @@ ROLE_ADMIN = 1
 # Game selection constants
 HOME_TEAM = 0
 AWAY_TEAM = 1
-
+TBP = -1
 
 class User(db.Model):
   __tablename__ = 'user'
@@ -43,6 +43,10 @@ class Year(db.Model):
   weeks = db.relationship('Week', backref = 'year', lazy = 'dynamic')
   statistics = db.relationship('Statistic', backref = 'year', lazy = 'dynamic')
 
+  @classmethod
+  def all(cls):
+    return Year.query.all()
+
   def __repr__(self):
     return '<Year: %d>' % self.year
 
@@ -54,6 +58,10 @@ class Week(db.Model):
   pvs_id = db.Column(db.Integer, db.ForeignKey('pointvalueset.id'))
   games = db.relationship('Schedule', backref = 'week', lazy = 'dynamic')
   statistics = db.relationship('Statistic', backref = 'week', lazy = 'dynamic')
+
+  @classmethod
+  def all(cls):
+    return Week.query.all()
 
   def __repr__(self):
     return '<Week: %d, %d>' % self.week % self.year
@@ -113,9 +121,9 @@ class Pick(db.Model):
   id = db.Column(db.Integer, primary_key = True)
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
   game_id = db.Column(db.Integer, db.ForeignKey('schedule.id'), nullable = False)
-  selection = db.Column(db.SmallInteger)
-  points = db.Column(db.Integer)
-  awardedPoints = db.Column(db.Integer, default = 0)
+  selection = db.Column(db.SmallInteger, default=TBP)
+  points = db.Column(db.Integer, default=0)
+  awardedPoints = db.Column(db.Integer, default=0)
 
   @classmethod
   def user_picks_by_week(cls, user, week):

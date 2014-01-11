@@ -1,40 +1,9 @@
 {% extends 'layout.html' %}
-{% block content %}
 
-{% for game in games %}
-<div class="row">
-  <div class="col-md-12" style="border:2px solid black">
-    <form role="form">
-      <fieldset>
-        <legend>{{ game.date }}</legend>
-        <div class="row">
-          <div class="col-md-6">
-            <div class="form-group">
-              <label class="radio-inline">
-                <input type="radio" name="{{ game.id }}" id="{{ game.id }}" value="{{ game.away_team_id }}">
-                {{ game.away_team.city }} {{ game.away_team.nickname }}
-              </label>
-            </div>
-            <div class="form-group">
-              <label class="radio-inline">
-                <input type="radio" name="{{ game.id }}" id="{{ game.id }}" value="{{ game.home_team_id }}">
-                {{ game.home_team.city }} {{ game.home_team.nickname }}
-              </label>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <select class="form-control" id="{{ game.id }}">
-              <option>1</option>
-              <option>3</option>
-              <option>5</option>
-              <option>7</option>
-            </select>
-          </div>
-          </div>
-        </fieldset>
-      </form>
-    </div>
-  </div>
-</div>
-{% endfor %}
+{% block content %}
+<ul>
+  {% for year in years %}
+  <li><a href="{{ url_for('year_schedule', year=year.year) }}">{{ year.year }}</a></li>
+  {% endfor %}
+</ul>
 {% endblock %}
