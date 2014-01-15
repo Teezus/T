@@ -87,6 +87,9 @@ def make_picks():
   else:
     return render_template('error.html')
 
+@app.route('/dynamic_picks')
+def make_picks_dynamic():
+  print "STUB"
 
 @app.route('/standings')
 def standings():
